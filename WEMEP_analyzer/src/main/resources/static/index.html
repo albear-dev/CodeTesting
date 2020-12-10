@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Required meta tags -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	
+	<!-- Bootstrap CSS -->
+	<link   rel="stylesheet"
+			href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+			integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2"
+			crossorigin="anonymous">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script>
+	$(document).ready(function(){
+		$("#form1").on("submit", function(e) {
+			e.preventDefault();
+			var submitUrl = $(this).attr("action");
+			var serializedData = $(this).serializeFormJSON();
+			
+			$.ajax({
+				url: submitUrl,
+				type: 'POST',
+				dataType: 'json',
+				accept: "application/json",
+				contentType: "application/json; charset=utf-8",
+				data : serializedData,
+				dataType: "json"
+			}).done((data, textStatus, jqXHR) => {
+				var message = jqXHR.responseJSON.message;
+				alert(message);
+				
+				$('#cut').text(jqXHR.responseJSON.data.cut);
+				$('#remainder').text(jqXHR.responseJSON.data.remainder);
+				
+				//console.log('성공');
+				//console.log(data);
+				//console.log(textStatus);
+				//console.log(jqXHR);
+			}).fail((jqXHR, textStatus, errorThrown) => {
+				var message = jqXHR.responseJSON.message;
+				for(var i=0; i<jqXHR.responseJSON.errors.length; i++){
+					message += "\r\n" + jqXHR.responseJSON.errors[i].errorMsg;
+				}
+				alert(message);
+				console.log(errorThrown);
+			});
+		});
+	});
+	
+	(function ($) {
+	    $.fn.serializeFormJSON = function () {
+
+	        var o = {};
+	        var a = this.serializeArray();
+	        $.each(a, function () {
+	            if (o[this.name]) {
+	                if (!o[this.name].push) {
+	                    o[this.name] = [o[this.name]];
+	                }
+	                o[this.name].push(this.value || '');
+	            } else {
+	                o[this.name] = this.value || '';
+	            }
+	        });
+	        return JSON.stringify(o);
+	    };
+	})(jQuery);
+	</script>
+	
+	<title>Hello, world!</title>
+</head>
+  <body class="bg-light">
+    <div class="container">
+	  <div class="py-5 text-center">
+	    <h2>HTML Analyzer</h2>
+	  </div>
+
+	<div class="row justify-content-md-center">
+		<div class="col-md-6">
+			<form id="form1" action="/v1/analyze" method="post" class="needs-validation" novalidate>
+				<div class="row">
+					<div class="col-md-12 mb-3">
+						<label for="url">URL</label> 
+						<input type="text" class="form-control" id="url" name="url" placeholder="" value="" required>
+						<div class="invalid-feedback">URL is required.</div>
+					</div>
+					
+					<div class="col-md-12 mb-3">
+						<label for="type">Analyze Type</label>
+						<select class="custom-select d-block w-100" id="type" name="type" required>
+							<option value="">Choose...</option>
+							<option value="1">HTML 태그 제외</option>
+							<option value="2">Text 전체</option>
+						</select>
+						<div class="invalid-feedback">Please select a valid type.</div>
+					</div>
+					
+					<div class="col-md-12 mb-3">
+						<label for="lastName">Output Unit</label> 
+						<input type="text" class="form-control" id="unit" name="unit" placeholder="" value="" required>
+						<div class="invalid-feedback">Valid unit value is required.</div>
+					</div>
+				</div>
+				
+				<hr class="mb-4">
+				<button id="submit_button" class="btn btn-primary btn-lg btn-block" type="submit">Analyze!</button>
+				
+				<hr class="mb-4">
+				<div class="row">
+					<div class="col-md-12 mb-3">
+						<label for="exampleFormControlTextarea1">몫</label>
+    					<textarea class="form-control" id="cut" rows="3"></textarea>
+					</div>
+					
+					<div class="col-md-12 mb-3">
+						<label for="exampleFormControlTextarea1">나머지</label>
+    					<textarea class="form-control" id="remainder" rows="3"></textarea>
+					</div>
+					
+				</div>
+				
+				
+			</form>
+		</div>
+	</div>
+</div>
+</body>
+</html>

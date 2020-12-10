@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="app.boardmanager.dao.BoardDao">
+	<sql id="COMMON_PAGING_HEADER">
+		SELECT R1.* FROM(	
+	</sql>
+	
+	<sql id="COMMON_PAGING_TAIL">
+		) R1
+		LIMIT #{pageLen, jdbcType=INTEGER} OFFSET #{offset, jdbcType=INTEGER}	
+	</sql>
+
+	<select id="selectBoardList" parameterType="app.boardmanager.dto.BoardListReqDto" resultType="app.boardmanager.dto.BoardListResDto">
+		<include refid="COMMON_PAGING_HEADER"/>
+		SELECT 	 SEQ
+				,SUBJECT
+				,CONTENT
+				,REG_DT
+				,REG_NAME
+		FROM board
+		WHERE 1=1
+		<if test='searchKey != null and searchCol != null and searchCol.equals("seq")'>
+		AND SEQ = #{searchKey}
+		</if>
+		<if test='searchKey != null and searchCol != null and searchCol.equals("subject")'>
+		AND SUBJECT LIKE CONCAT('%',#{searchKey},'%')
+		</if>
+		<if test='searchKey != null and searchCol != null and searchCol.equals("regName")'>
+		AND REG_NAME = #{searchKey}
+		</if>
+		<if test='orderCol != null and orderCol.equals("seq")'>
+		ORDER BY SEQ <if test='isDesc==true'>DESC</if><if test='isDesc==false'>ASC</if>
+		</if>
+		<if test='orderCol != null and orderCol.equals("regDt")'>
+		ORDER BY REG_DT <if test='isDesc==true'>DESC</if><if test='isDesc==false'>ASC</if>
+		</if>
+		<include refid="COMMON_PAGING_TAIL"/>
+	</select>
+	
+	<select id="selectBoardDetail" parameterType="app.boardmanager.dto.BoardDetailReqDto" resultType="app.boardmanager.dto.BoardDetailResDto">
+		SELECT 	 SEQ
+				,SUBJECT
+				,CONTENT
+				,REG_DT
+				,REG_NAME
+		FROM board
+		WHERE 1=1
+		AND SEQ = #{seq}
+	</select>
+	
+	<insert id="insertBoardContent" parameterType="app.boardmanager.dto.BoardRegReqDto">
+		INSERT INTO board (
+			 SUBJECT
+		    ,CONTENT
+		    ,REG_DT
+		    ,REG_NAME
+		) values (
+			 #{subject}
+		    ,#{content}
+			,now()
+		    ,#{regName}
+		)
+	</insert>
+	
+	<update id="modifyBoardContent" parameterType="app.boardmanager.dto.BoardModifyReqDto">
+		UPDATE board
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="subject != null">SUBJECT = #{subject},</if>
+			<if test="content != null">CONTENT = #{content},</if>
+			<if test="regName != null">REG_NAME = #{regName},</if>
+		</trim>
+		WHERE
+		SEQ = #{seq}
+	</update>
+	
+	
+	<delete id="deleteBoardContent" parameterType="app.boardmanager.dto.BoardRegReqDto">
+		DELETE FROM board
+		WHERE SEQ = #{seq}
+	</delete>
+</mapper>
